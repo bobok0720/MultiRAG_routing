@@ -34,3 +34,11 @@ Then:
 ```bash
 python scripts/demo.py --download_llm_pdf --question "What affects speedup in speculative decoding?"
 ```
+
+## Streamlit presentation demo
+
+Run registry API, register/activate RAGs, then launch:
+
+```bash
+streamlit run scripts/demo_streamlit.py
+```

@@ -8,6 +8,11 @@ from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core import SimpleDirectoryReader
 from llama_index.vector_stores.faiss import FaissVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+try:
+    from llama_index.core import SimpleDirectoryReader
+except Exception:
+    from llama_index.readers.file import SimpleDirectoryReader
+
 
 @dataclass
 class RagIndexBundle:
@@ -15,6 +20,7 @@ class RagIndexBundle:
     retriever: object
     docs: list
     nodes: list
+    faiss_index: faiss.Index
 
 def build_faiss_rag_index(
     pdf_dir: str,
@@ -46,4 +52,16 @@ def build_faiss_rag_index(
 
     index = VectorStoreIndex(nodes, vector_store=vector_store)
     retriever = index.as_retriever(similarity_top_k=similarity_top_k)
-    return RagIndexBundle(index=index, retriever=retriever, docs=docs, nodes=nodes)
+    return RagIndexBundle(index=index, retriever=retriever, docs=docs, nodes=nodes, faiss_index=faiss_index)
+def load_docs_and_split(pdf_dir: str, chunk_size: int, chunk_overlap: int):
+    try:
+        from llama_index.core import SimpleDirectoryReader
+        from llama_index.core.node_parser import SentenceSplitter
+    except Exception:
+        from llama_index.core import SimpleDirectoryReader
+        from llama_index.core.node_parser import SentenceSplitter
+
+    docs = SimpleDirectoryReader(input_dir=pdf_dir).load_data()
+    splitter = SentenceSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    nodes = splitter.get_nodes_from_documents(docs)
+    return docs, nodes
